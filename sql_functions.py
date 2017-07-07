@@ -4,6 +4,7 @@ import numpy as np
 
 
 def get_data(dbname, tblname):
+    # Get the data from the specified table and database, and put it into an ndarray
     connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
                                          host=cred.get_server_address(),
                                          database=dbname)
@@ -29,33 +30,36 @@ def get_data(dbname, tblname):
     return data_array
 
 
-def save_data(dbname, tblname, ndarray):
+def append_data(dbname, tblname, ndarray):
+    # Save the data from the given ndarray into the specified table and database.
     connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
                                          host=cred.get_server_address(),
                                          database=dbname)
     cursor = connection.cursor()
 
-    command = "INSERT INTO test_table VALUES ("
-    for x in range(ndarray.shape[1]):
+
+    print(ndarray.shape)
+
+    command = "INSERT INTO test_table (column1, column2, column3) VALUES ("
+    for x in range(ndarray.shape[0]):
         if x == 0:
             command += "%s"
         else:
             command += ", %s"
     command += ")"
 
+    print(command)
 
+    mylist = np.ndarray.tolist(ndarray)
 
-    data = (4, "AABBCC", 3.14)
+    print(mylist)
 
-# Insert new row
-cursor.execute(add_one, data_one)
+    data = mylist
 
-row_no = cursor.lastrowid
+    cursor.execute(command, data)
 
-# Make sure data is committed to the database
-cnx.commit()
-
-cursor.close()
-cnx.close()
+    connection.commit()
+    cursor.close()
+    connection.close()
 
 
