@@ -29,7 +29,7 @@ def get_data(dbname, tblname):
     return data_array
 
 
-def append_data(dbname, tblname, ndarray_input: np.ndarray):
+def append_row(dbname, tblname, ndarray_input):
     # Append data from the given ndarray in the specified table and database. Return true if some rows were appended.
     connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
                                          host=cred.get_server_address(),
