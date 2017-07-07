@@ -121,9 +121,8 @@ def save_data(dbname, tblname, ndarray_input):
         #else:
             #create_table(dbname, tblname, columns, column_types)
 
-    row1 = ndarray_input[0]
-    row1_as_list = row1.tolist()
-    num_of_s = len(row1_as_list)
+    num_of_s = ndarray_input.shape[1]
+    num_of_rows = ndarray_input.shape[0]
 
     command = "INSERT INTO " + tblname + " VALUES ("
     for x in range(num_of_s):
@@ -133,9 +132,10 @@ def save_data(dbname, tblname, ndarray_input):
             command += ", %s"
     command += ")"
 
-    data = row1_as_list
-
-    cursor.execute(command, data)
+    for x in range(num_of_rows):
+        row = ndarray_input[x]
+        data = row.tolist()
+        cursor.execute(command, data)
 
     cmd = "SELECT COUNT(*) FROM " + tblname
     cursor.execute(cmd)
