@@ -29,8 +29,8 @@ def get_data(dbname, tblname):
     return data_array
 
 
-def append_data(dbname, tblname, ndarray):
-    # Save the data from the given ndarray in the specified table and database. Return true if some rows were appended.
+def append_data(dbname, tblname, ndarray_input: np.ndarray):
+    # Append data from the given ndarray in the specified table and database. Return true if some rows were appended.
     connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
                                          host=cred.get_server_address(),
                                          database=dbname)
@@ -40,15 +40,15 @@ def append_data(dbname, tblname, ndarray):
     cursor.execute(cmd)
     count1 = cursor.fetchall()
 
-    command = "INSERT INTO " + tblname + " (column1, column2, column3) VALUES ("
-    for x in range(ndarray.shape[0]):
+    command = "INSERT INTO " + tblname + " VALUES ("
+    for x in range(ndarray_input.shape[0]):
         if x == 0:
             command += "%s"
         else:
             command += ", %s"
     command += ")"
 
-    data = np.ndarray.tolist(ndarray)
+    data = ndarray_input.tolist()
 
     cursor.execute(command, data)
     cursor.execute(cmd)
@@ -91,3 +91,63 @@ def clear_data(dbname, tblname):
         return False
 
 
+'''def create_table(dbname, tblname, columns, column_types):
+    # create a table in the specified database with the given column names and types.
+    connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
+                                         host=cred.get_server_address(),
+                                         database=dbname)
+    cursor = connection.cursor()
+
+    command = "CREATE TABLE " + tblname + " ("
+     # add columns and their type'''
+
+
+def save_data(dbname, tblname, ndarray_input):
+    # save data in the specified table. Delete previous data from table or create table if it does not exist.
+    connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
+                                         host=cred.get_server_address(),
+                                         database=dbname)
+    cursor = connection.cursor()
+
+    cmmnd = "SHOW TABLES"
+    cursor.execute(cmmnd)
+    tables = cursor.fetchall()
+
+    # get columns and their types - from ndarray_input[0]
+
+    for x in range(len(tables)):
+        if tblname in tables[x]:
+            clear_data(dbname, tblname)
+        #else:
+            #create_table(dbname, tblname, columns, column_types)
+
+    row1 = ndarray_input[0]
+    row1_as_list = row1.tolist()
+    num_of_s = len(row1_as_list)
+
+    command = "INSERT INTO " + tblname + " VALUES ("
+    for x in range(num_of_s):
+        if x == 0:
+            command += "%s"
+        else:
+            command += ", %s"
+    command += ")"
+
+    data = row1_as_list
+
+    cursor.execute(command, data)
+
+    cmd = "SELECT COUNT(*) FROM " + tblname
+    cursor.execute(cmd)
+    count = cursor.fetchall()
+
+    if count[0][0] > 0:
+        success = True
+    else:
+        success = False
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    return success
