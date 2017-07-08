@@ -4,8 +4,8 @@ import numpy as np
 def get_data(filename):
     result = []
     with open(filename, 'r') as csvfile:
-        spamreader = csv.reader(csvfile)
-        for row in spamreader:
+        reader = csv.reader(csvfile)
+        for row in reader:
             result.append(row)
             #print(', '.join(row))
 
@@ -24,4 +24,7 @@ def clear_data(filename):
 
 
 def save_data(filename, ndarray):
-    
+    with open(filename, "w", newline="\n") as csv_file:
+        writer = csv.writer(csv_file, delimiter=',')
+        for row in ndarray:
+            writer.writerow(row)
