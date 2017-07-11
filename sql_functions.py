@@ -9,7 +9,6 @@ def get_data(dbname, tblname):
                                          host=cred.get_server_address(),
                                          database=dbname)
     cursor = connection.cursor()
-    #cursor.execute("USE " + dbname)
     cursor.execute("SELECT * FROM " + tblname)
     results = cursor.fetchall()
 
@@ -39,7 +38,13 @@ def append_row(dbname, tblname, ndarray_input):
                                          database=dbname)
     cursor = connection.cursor()
 
-    count1 = count_all(dbname, tblname)
+    cursor.execute("SELECT count(*) FROM information_schema.columns WHERE table_name = '" + tblname + "'")
+    columns = cursor.fetchall()
+    if columns[0][0] != len(ndarray_input):
+        raise Exception("This row does not have the same number of entries as there are columns!")
+
+    count1 = count_rows(dbname, tblname)
+    print(count1)
 
     command = "INSERT INTO " + tblname + " VALUES ("
     for x in range(ndarray_input.shape[0]):
@@ -53,16 +58,17 @@ def append_row(dbname, tblname, ndarray_input):
 
     cursor.execute(command, data)
 
-    count2 = count_all(dbname, tblname)
-
-    if count1 < count2:
-        success = True
-    else:
-        success = False
-
     connection.commit()
     cursor.close()
     connection.close()
+
+    count2 = count_rows(dbname, tblname)
+    print(count2)
+
+    if count2 == count1+1:
+        success = True
+    else:
+        success = False
 
     return success
 
@@ -86,13 +92,13 @@ def clear_data(dbname, tblname):
     command = "DELETE FROM " + tblname
     cursor.execute(command)
 
-    success = count_all(dbname, tblname)
+    success = count_rows(dbname, tblname)
 
     connection.commit()
     cursor.close()
     connection.close()
 
-    if success[0][0] == 0:
+    if success == 0:
         return True
     else:
         return False
@@ -100,8 +106,9 @@ def clear_data(dbname, tblname):
 
 def save_data(dbname, tblname, ndarray_input):
     # save data in the specified table. Delete previous data from table or create table if it does not exist.
-    if len(ndarray_input.shape) < 2:
-        raise Exception("This function requires multiple rows as input. Try append_row.")
+    if len(ndarray_input.shape) != 2:
+        raise Exception("This function requires multiple rows and an nd-array as input. "
+                        "Try append_row or check the entries in each row.")
 
     connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
                                          host=cred.get_server_address(),
@@ -110,13 +117,17 @@ def save_data(dbname, tblname, ndarray_input):
 
     tables = show_tables(dbname)
 
-    # get columns and their types - from ndarray_input[0]
-
+    present = False
     for x in range(len(tables)):
         if tblname in tables[x]:
-            clear_data(dbname, tblname)
-        #else:
-            #create_table(dbname, tblname, columns, column_types)
+            present = True
+            cleared = clear_data(dbname, tblname)
+            if not cleared:
+                raise Exception("Data wasn't cleared!")
+            break
+    if not present:
+        raise Exception("Table does not exist!")
+        #create_table(dbname, tblname, columns, column_types)
 
     num_of_s = ndarray_input.shape[1]
     num_of_rows = ndarray_input.shape[0]
@@ -134,16 +145,16 @@ def save_data(dbname, tblname, ndarray_input):
         data = row.tolist()
         cursor.execute(command, data)
 
-    count = count_all(dbname, tblname)
-
-    if count[0][0] > 0:
-        success = True
-    else:
-        success = False
-
     connection.commit()
     cursor.close()
     connection.close()
+
+    count = count_rows(dbname, tblname)
+
+    if count > 0:
+        success = True
+    else:
+        success = False
 
     return success
 
@@ -157,10 +168,15 @@ def show_tables(dbname):
     cmmnd = "SHOW TABLES"
     cursor.execute(cmmnd)
     tables = cursor.fetchall()
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+
     return tables
 
 
-def count_all(dbname, tblname):
+def count_rows(dbname, tblname):
     # executes the SQL command to count the number of rows in the specified table.
     connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
                                          host=cred.get_server_address(),
@@ -169,7 +185,12 @@ def count_all(dbname, tblname):
     cmd = "SELECT COUNT(*) FROM " + tblname
     cursor.execute(cmd)
     count = cursor.fetchall()
-    return count
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+    return count[0][0]
 
 
 '''def create_table(dbname, tblname, columns, column_types):
