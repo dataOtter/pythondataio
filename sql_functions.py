@@ -9,7 +9,7 @@ def get_data(dbname, tblname):
                                          host=cred.get_server_address(),
                                          database=dbname)
     cursor = connection.cursor()
-    cursor.execute("USE " + dbname)
+    #cursor.execute("USE " + dbname)
     cursor.execute("SELECT * FROM " + tblname)
     results = cursor.fetchall()
 
@@ -39,9 +39,7 @@ def append_row(dbname, tblname, ndarray_input):
                                          database=dbname)
     cursor = connection.cursor()
 
-    cmd = "SELECT COUNT(*) FROM " + tblname
-    cursor.execute(cmd)
-    count1 = cursor.fetchall()
+    count1 = count_all(dbname, tblname)
 
     command = "INSERT INTO " + tblname + " VALUES ("
     for x in range(ndarray_input.shape[0]):
@@ -54,8 +52,8 @@ def append_row(dbname, tblname, ndarray_input):
     data = ndarray_input.tolist()
 
     cursor.execute(command, data)
-    cursor.execute(cmd)
-    count2 = cursor.fetchall()
+
+    count2 = count_all(dbname, tblname)
 
     if count1 < count2:
         success = True
@@ -76,11 +74,9 @@ def clear_data(dbname, tblname):
                                          database=dbname)
     cursor = connection.cursor()
 
-    cmmnd = "SHOW TABLES"
-    cursor.execute(cmmnd)
-    tables = cursor.fetchall()
-
+    tables = show_tables(dbname)
     found = False
+
     for x in range(len(tables)):
         if tblname in tables[x]:
             found = True
@@ -88,12 +84,9 @@ def clear_data(dbname, tblname):
         raise Exception("This table does not exist anyway!")
 
     command = "DELETE FROM " + tblname
-
     cursor.execute(command)
 
-    cmd = "SELECT COUNT(*) FROM " + tblname
-    cursor.execute(cmd)
-    success = cursor.fetchall()
+    success = count_all(dbname, tblname)
 
     connection.commit()
     cursor.close()
@@ -103,17 +96,6 @@ def clear_data(dbname, tblname):
         return True
     else:
         return False
-
-
-'''def create_table(dbname, tblname, columns, column_types):
-    # create a table in the specified database with the given column names and types.
-    connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
-                                         host=cred.get_server_address(),
-                                         database=dbname)
-    cursor = connection.cursor()
-
-    command = "CREATE TABLE " + tblname + " ("
-     # add columns and their type'''
 
 
 def save_data(dbname, tblname, ndarray_input):
@@ -126,9 +108,7 @@ def save_data(dbname, tblname, ndarray_input):
                                          database=dbname)
     cursor = connection.cursor()
 
-    cmmnd = "SHOW TABLES"
-    cursor.execute(cmmnd)
-    tables = cursor.fetchall()
+    tables = show_tables(dbname)
 
     # get columns and their types - from ndarray_input[0]
 
@@ -154,9 +134,7 @@ def save_data(dbname, tblname, ndarray_input):
         data = row.tolist()
         cursor.execute(command, data)
 
-    cmd = "SELECT COUNT(*) FROM " + tblname
-    cursor.execute(cmd)
-    count = cursor.fetchall()
+    count = count_all(dbname, tblname)
 
     if count[0][0] > 0:
         success = True
@@ -168,3 +146,38 @@ def save_data(dbname, tblname, ndarray_input):
     connection.close()
 
     return success
+
+
+def show_tables(dbname):
+    # executes the SQL command to show all tables in the specified database.
+    connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
+                                         host=cred.get_server_address(),
+                                         database=dbname)
+    cursor = connection.cursor()
+    cmmnd = "SHOW TABLES"
+    cursor.execute(cmmnd)
+    tables = cursor.fetchall()
+    return tables
+
+
+def count_all(dbname, tblname):
+    # executes the SQL command to count the number of rows in the specified table.
+    connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
+                                         host=cred.get_server_address(),
+                                         database=dbname)
+    cursor = connection.cursor()
+    cmd = "SELECT COUNT(*) FROM " + tblname
+    cursor.execute(cmd)
+    count = cursor.fetchall()
+    return count
+
+
+'''def create_table(dbname, tblname, columns, column_types):
+    # create a table in the specified database with the given column names and types.
+    connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
+                                         host=cred.get_server_address(),
+                                         database=dbname)
+    cursor = connection.cursor()
+
+    command = "CREATE TABLE " + tblname + " ("
+     # add columns and their type'''

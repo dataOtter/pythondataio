@@ -27,11 +27,19 @@ print(sqlf.get_data('dev_test', 'test_table'))
 
 filename = 'test.csv'
 row = [0, 1, 'ds,d', 3, 4, -1, 5, 6, 7, 8, 9]
+row2 = [[0, 1, 'ds,d', 3, 4, -1, 5, 6, 7, 8, 9],[2, 4]]
+row3 = [34, 'dfg, g', -45.56]
 
-#csvf.append_row(filename, row)
+'''try:
+    csvf.append_row(filename, row3)
+except Exception as e:
+    print(e)'''
 
-#csvf.clear_data(filename)
+#print(csvf.clear_data(filename))
 
-#csvf.save_data(filename, the_data)
+'''try:
+    csvf.save_data(filename, the_data)
+except Exception as e:
+    print(e)'''
 
 #print(csvf.get_data(filename))
