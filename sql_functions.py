@@ -31,6 +31,9 @@ def get_data(dbname, tblname):
 
 def append_row(dbname, tblname, ndarray_input):
     # Append data from the given ndarray in the specified table and database. Return true if some rows were appended.
+    if len(ndarray_input.shape) != 1:
+        raise Exception("This function only takes a single row as input.")
+
     connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
                                          host=cred.get_server_address(),
                                          database=dbname)
@@ -73,6 +76,17 @@ def clear_data(dbname, tblname):
                                          database=dbname)
     cursor = connection.cursor()
 
+    cmmnd = "SHOW TABLES"
+    cursor.execute(cmmnd)
+    tables = cursor.fetchall()
+
+    found = False
+    for x in range(len(tables)):
+        if tblname in tables[x]:
+            found = True
+    if not found:
+        raise Exception("This table does not exist anyway!")
+
     command = "DELETE FROM " + tblname
 
     cursor.execute(command)
@@ -104,6 +118,9 @@ def clear_data(dbname, tblname):
 
 def save_data(dbname, tblname, ndarray_input):
     # save data in the specified table. Delete previous data from table or create table if it does not exist.
+    if len(ndarray_input.shape) < 2:
+        raise Exception("This function requires multiple rows as input. Try append_row.")
+
     connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
                                          host=cred.get_server_address(),
                                          database=dbname)

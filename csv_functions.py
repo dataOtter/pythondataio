@@ -7,7 +7,6 @@ def get_data(filename):
         reader = csv.reader(csvfile)
         for row in reader:
             result.append(row)
-            #print(', '.join(row))
 
     return result
 
