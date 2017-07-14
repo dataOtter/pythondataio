@@ -4,7 +4,7 @@ import numpy as np
 
 
 def get_data(dbname, tblname):
-    # Get the data from the specified table and database, and return it as an ndarray
+    """Get the data from the specified table and database, and return it as an ndarray"""
     connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
                                          host=cred.get_server_address(),
                                          database=dbname)
@@ -29,7 +29,8 @@ def get_data(dbname, tblname):
 
 
 def append_row(dbname, tblname, ndarray_input):
-    # Append data from the given ndarray in the specified table and database. Return true if some rows were appended.
+    """Append data from the given ndarray in the specified table and database.
+    Return true if some rows were appended."""
     if len(ndarray_input.shape) != 1:
         raise Exception("This function only takes a single row as input.")
 
@@ -74,7 +75,7 @@ def append_row(dbname, tblname, ndarray_input):
 
 
 def clear_data(dbname, tblname):
-    # Deletes ALL the data/rows in the specified table.
+    """Deletes ALL the data/rows in the specified table."""
     connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
                                          host=cred.get_server_address(),
                                          database=dbname)
@@ -105,7 +106,7 @@ def clear_data(dbname, tblname):
 
 
 def save_data(dbname, tblname, ndarray_input):
-    # save data in the specified table. Delete previous data from table or create table if it does not exist.
+    """Save data in the specified table. Delete previous data from table or create table if it does not exist."""
     if len(ndarray_input.shape) != 2:
         raise Exception("This function requires multiple rows and an nd-array as input. "
                         "Try append_row or check the entries in each row.")
@@ -127,7 +128,7 @@ def save_data(dbname, tblname, ndarray_input):
             break
     if not present:
         raise Exception("Table does not exist!")
-        #create_table(dbname, tblname, columns, column_types)
+        # create_table(dbname, tblname, columns, column_types)
 
     num_of_s = ndarray_input.shape[1]
     num_of_rows = ndarray_input.shape[0]
@@ -160,7 +161,7 @@ def save_data(dbname, tblname, ndarray_input):
 
 
 def show_tables(dbname):
-    # executes the SQL command to show all tables in the specified database.
+    """Executes the SQL command to show all tables in the specified database."""
     connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
                                          host=cred.get_server_address(),
                                          database=dbname)
@@ -177,7 +178,7 @@ def show_tables(dbname):
 
 
 def count_rows(dbname, tblname):
-    # executes the SQL command to count the number of rows in the specified table.
+    """Executes the SQL command to count the number of rows in the specified table."""
     connection = mysql.connector.connect(user=cred.get_user_name(), password=cred.get_password(),
                                          host=cred.get_server_address(),
                                          database=dbname)
